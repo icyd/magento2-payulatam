@@ -1,5 +1,5 @@
 {
-  "name": "icyd/magento2-payulatam",
+  "name": "icyd/magento2_payula",
   "description": "PayuLatam module for Magento 2",
   "require": {
     "php": ">=7.0.0",
@@ -21,7 +21,7 @@
   "authors": [
     {
       "name": "Alberto Vázquez",
-      "homepage": "https://github.com/icyd/magento2-payulatam"
+      "homepage": "https://github.com/icyd/magento2_payula"
     }
   ],
   "license": [
