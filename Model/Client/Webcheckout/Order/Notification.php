@@ -23,17 +23,25 @@ class Notification
 
     public function getPayuplOrderId($request)
     {
-        if (!$request->isPost()) {
-            throw new LocalizedException(new Phrase('POST request is required.'));
+        // if (!$request->isPost()) {
+        //     throw new LocalizedException(new Phrase('POST request is required.'));
+        // }
+        $sig = $request->getParam('sign');
+        $newValue = $this->getNewValue($request->getParam('value'));
+        $currency = $request->getParam('currency');
+        $state = $request->getParam('state_pol');
+        $menchantId = $request->getParam('merchant_id');
+        $reference = $request->getParam('reference_sale');
+        $ApiKey = $this->configHelper->getConfig('ApiKey');
+        if (md5($ApiKey . $menchantId . $reference . $newValue . $currency . $state) === $sig) {
+            return $reference;
         }
-        $sig = $request->getParam('sig');
-        $ts = $request->getParam('ts');
-        $posId = $request->getParam('pos_id');
-        $sessionId = $request->getParam('referenceCode');
-        $secondKeyMd5 = $this->configHelper->getConfig('second_key_md5');
-        if (md5($posId . $sessionId . $ts . $secondKeyMd5) === $sig) {
-            return $sessionId;
-        }
-        throw new LocalizedException(new Phrase('Invalid SIG.'));
+        throw new LocalizedException(new Phrase('Invalid Signature.'));
+    }
+
+    public function getNewValue($value)
+    {
+        $pattern = '/(\d+(.|,)\d)0$/';
+        return preg_replace($pattern, '\1', $value);
     }
 }

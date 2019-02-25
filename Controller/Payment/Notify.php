@@ -54,12 +54,17 @@ class Notify extends \Magento\Framework\App\Action\Action
         try {
             $client = $this->clientFactory->create();
             $response = $client->orderConsumeNotification($request);
+            $this->logger->log(100,print_r($response,true));
+            throw new \Exception ('Test exception');
+            // foreach ($response as $key => $value) {
+            //     $this->logger->addInfo("{$key} => {$value}");
+            // }
             $clientOrderHelper = $client->getOrderHelper();
-            if ($clientOrderHelper->canProcessNotification($response['referenceCode'])) {
+            if ($clientOrderHelper->canProcessNotification($response['referece_sale'])) {
                 return $clientOrderHelper->processNotification(
-                    $response['referenceCode'],
-                    $response['status'],
-                    $response['amount']
+                    $response['reference_sale'],
+                    $response['state_pol'],
+                    $response['value']
                 );
             }
         } catch (LocalizedException $e) {

@@ -40,6 +40,7 @@ class End extends \Magento\Framework\App\Action\Action
      * @var \Icyd\Payulatam\Logger\Logger
      */
     protected $logger;
+    protected $request;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -54,6 +55,7 @@ class End extends \Magento\Framework\App\Action\Action
         \Magento\Framework\App\Action\Context $context,
         \Magento\Checkout\Model\Session\SuccessValidator $successValidator,
         \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Framework\App\RequestInterface $request,
         \Icyd\Payulatam\Model\Session $session,
         \Icyd\Payulatam\Model\ClientFactory $clientFactory,
         \Icyd\Payulatam\Model\Order $orderHelper,
@@ -67,6 +69,7 @@ class End extends \Magento\Framework\App\Action\Action
         $this->clientFactory = $clientFactory;
         $this->orderHelper = $orderHelper;
         $this->logger = $logger;
+        $this->request =  $request;
     }
 
     /**
@@ -81,9 +84,8 @@ class End extends \Magento\Framework\App\Action\Action
         $redirectUrl = '/';
         try {
             if ($this->successValidator->isValid()) {
-                // $redirectUrl = 'payulatam/payment/error';
-                $redirectUrl = 'checkout/onepage/failure';
-                // $this->session->setLastOrderId(null);
+                $redirectUrl = 'payulatam/payment/error';
+                $this->session->setLastOrderId(null);
                 $clientOrderHelper = $this->getClientOrderHelper();
                 if ($this->orderHelper->paymentSuccessCheck() && $clientOrderHelper->paymentSuccessCheck()) {
                     $redirectUrl = 'checkout/onepage/success';
@@ -91,10 +93,11 @@ class End extends \Magento\Framework\App\Action\Action
 
             } else {
                 if ($this->session->getLastOrderId()) {
-                    $redirectUrl = 'payulatam/payment/repeat_error';
+                    $redirectUrl = 'payulatam/payment/error';
                     $clientOrderHelper = $this->getClientOrderHelper();
                     if ($this->orderHelper->paymentSuccessCheck() && $clientOrderHelper->paymentSuccessCheck()) {
-                        $redirectUrl = 'payulatam/payment/repeat_success';
+                        $redirectUrl = 'payulatam/payment/start';
+                        $redirectParams = ['repeat' => '1'];
                     }
                 }
             }

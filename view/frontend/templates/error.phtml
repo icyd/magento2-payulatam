@@ -1,5 +1,2 @@
-<?php
-
-    echo $block->sayHello();
-
-?>
+<p><?php echo $block->returnMessage();?></p>
+<p><?= __('Haz click <a href="%1">aquí</a> para seguir comprando.', $block->escapeUrl($block->getContinueShoppingUrl())) ?></p>
