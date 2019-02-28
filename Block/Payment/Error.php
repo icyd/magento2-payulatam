@@ -4,29 +4,26 @@ namespace Icyd\Payulatam\Block\Payment;
 
 class Error extends \Magento\Framework\View\Element\Template
 {
-    protected $registry;
     protected $_escaper;
-    protected $_checkoutSession;
+    protected $_session;
     protected $_cart;
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\Registry $registry,
-        \Magento\Checkout\Model\Cart $_cart,
+        \Magento\Checkout\Model\Cart $cart,
+        \Icyd\Payulatam\Model\Session $session,
         \Magento\Framework\Escaper $escaper
     )
     {
         parent::__construct($context);
-        $this->_checkoutSession = $checkoutSession;
-        $this->registry = $registry;
-        $this->_cart = $_cart;
+        $this->_session = $session;
+        $this->_cart = $cart;
         $this->_escaper = $escaper;
     }
 
     public function returnMessage()
     {
-        $message = $this->registry->registry('message');
+        $message = $this->_session->getErrorMsg();
         if(is_null($message))
             $message = 'Ocurrió un error en la página, por favor intentalo de nuevo más tarde';
         return $message;

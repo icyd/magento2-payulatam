@@ -25,26 +25,22 @@ namespace Icyd\Payulatam\Controller\Payment;
     {
         protected $_pageFactory;
         protected $request;
-        protected $registry;
 
         public function __construct(
             \Magento\Framework\App\Action\Context $context,
             \Magento\Framework\App\RequestInterface $request,
-            \Magento\Framework\View\Result\PageFactory $pageFactory,
-            \Magento\Framework\Registry $registry
+            \Magento\Framework\View\Result\PageFactory $pageFactory
         )
         {
             $this->_pageFactory = $pageFactory;
             $this->request = $request;
-            $this->registry = $registry;
             return parent::__construct($context);
         }
 
         public function execute()
         {
             $resultPage = $this->_pageFactory->create();
-            // $this->registry->register('message', 'mamenlo');
-            $resultPage->getConfig()->getTitle()->set(__('Payment Error'));
+            $resultPage->getConfig()->getTitle()->set(__('Error durante pago'));
             if(!is_null($this->request->getParam('exception'))) {
                 $resultPage->getConfig()->getTitle()->set(__('Error de página'));
             }

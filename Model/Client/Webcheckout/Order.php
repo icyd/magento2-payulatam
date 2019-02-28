@@ -114,16 +114,16 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
      */
     public function __construct(
         \Magento\Framework\View\Context $context,
+        \Magento\Framework\App\RequestInterface $request,
+        \Magento\Framework\Controller\Result\RawFactory $rawResultFactory,
+        \Icyd\Payulatam\Model\Session $session,
+        \Icyd\Payulatam\Logger\Logger $logger,
+        \Icyd\Payulatam\Model\ResourceModel\Transaction $transactionResource,
         Order\DataValidator $dataValidator,
         Order\DataGetter $dataGetter,
-        \Icyd\Payulatam\Model\Session $session,
-        \Magento\Framework\App\RequestInterface $request,
-        \Icyd\Payulatam\Logger\Logger $logger,
         Order\Notification $notificationHelper,
-        MethodCaller $methodCaller,
-        \Icyd\Payulatam\Model\ResourceModel\Transaction $transactionResource,
         Order\Processor $orderProcessor,
-        \Magento\Framework\Controller\Result\RawFactory $rawResultFactory
+        MethodCaller $methodCaller
     ) {
         $this->urlBuilder = $context->getUrlBuilder();
         $this->dataValidator = $dataValidator;
@@ -287,12 +287,25 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     public function paymentSuccessCheck()
     {
         $errorCode = $this->request->getParam('transactionState');
-        if ($errorCode  == Order::STATUS_ERROR) {
-            $extOrderId = $this->request->getParam('lapReferenceCode');
+        $extOrderId = $this->request->getParam('lapResponseCode');
+
+        if ($errorCode == Self::STATUS_ERROR) {
+            $this->session->setErrorMsg("Error durante tansacción: {$extOrderId}");
             $this->logger->error('Payment error ' . $errorCode . ' for transaction ' . $extOrderId . '.');
-            return false;
+        } elseif ($errorCode == Self::STATUS_DECLINED) {
+            $this->session->setErrorMsg("Transacción rechazada por: {$extOrderId}");
+            // $this->logger->debug('Pago rechazada');
+        } elseif ($errorCode == Self::STATUS_PENDING) {
+            $this->session->setErrorMsg("Transacción pendiente por: {$extOrderId}");
+            // $this->logger->debug('Pago pendiente');
+        } elseif ($errorCode == Self::STATUS_EXPIRED) {
+            $this->session->setErrorMsg("Transacción expirada.");
+            // $this->logger->debug('Pago expirado');
+        } elseif ($errorCode == Self::STATUS_APPROVED) {
+            // $this->logger->debug('Pago aprovado');
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

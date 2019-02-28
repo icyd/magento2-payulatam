@@ -20,6 +20,7 @@ class Notify extends \Magento\Framework\App\Action\Action
      * @var \Magento\Framework\Controller\Result\ForwardFactory
      */
     protected $resultForwardFactory;
+    protected $resultPageFactory;
 
     /**
      * @var \Icyd\Payulatam\Logger\Logger
@@ -34,6 +35,7 @@ class Notify extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         \Icyd\Payulatam\Model\ClientFactory $clientFactory,
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
         \Icyd\Payulatam\Logger\Logger $logger
@@ -42,37 +44,45 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->context = $context;
         $this->clientFactory = $clientFactory;
         $this->resultForwardFactory = $resultForwardFactory;
+        $this->resultPageFactory = $resultPageFactory;
         $this->logger = $logger;
     }
 
     public function execute()
     {
+        throw new \Exception("MAMALO");
+        // $resutPage = $this->resultPageFactory->create();
         /**
          * @var $client \Icyd\Payulatam\Model\Client
          */
-        $request = $this->context->getRequest();
-        try {
-            $client = $this->clientFactory->create();
-            $response = $client->orderConsumeNotification($request);
-            $this->logger->log(100,print_r($response,true));
-            throw new \Exception ('Test exception');
-            // foreach ($response as $key => $value) {
-            //     $this->logger->addInfo("{$key} => {$value}");
-            // }
-            $clientOrderHelper = $client->getOrderHelper();
-            if ($clientOrderHelper->canProcessNotification($response['referece_sale'])) {
-                return $clientOrderHelper->processNotification(
-                    $response['reference_sale'],
-                    $response['state_pol'],
-                    $response['value']
-                );
-            }
-        } catch (LocalizedException $e) {
-            $this->logger->critical($e);
-        }
-        /**
-         * @var $resultForward \Magento\Framework\Controller\Result\Forward
-         */
+    //     $request = $this->context->getRequest();
+        $this->logger->debug("Content of request");
+    //     foreach ($request as $key => $value) {
+    //         $this->logger->debug("{$key} => {$value}");
+    //     }
+    //     try {
+    //         $client = $this->clientFactory->create();
+    //         $response = $client->orderConsumeNotification($request);
+    //         // $this->logger->debug(print_r($response,true));
+    //         // throw new \Exception ('Test exception');
+    //         $this->logger->debug("Content of response");
+    //         foreach ($response as $key => $value) {
+    //             $this->logger->debug("{$key} => {$value}");
+    //         }
+    //         $clientOrderHelper = $client->getOrderHelper();
+    //         if ($clientOrderHelper->canProcessNotification($response['referece_sale'])) {
+    //             return $clientOrderHelper->processNotification(
+    //                 $response['reference_sale'],
+    //                 $response['state_pol'],
+    //                 $response['value']
+    //             );
+    //         }
+    //     } catch (LocalizedException $e) {
+    //         $this->logger->critical($e);
+    //     }
+    //     /**
+    //      * @var $resultForward \Magento\Framework\Controller\Result\Forward
+    //      */
         $resultForward = $this->resultForwardFactory->create();
         $resultForward->forward('noroute');
         return $resultForward;

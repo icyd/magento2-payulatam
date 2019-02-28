@@ -36,11 +36,11 @@ class Start extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\App\RequestInterface $request,
         \Icyd\Payulatam\Model\ClientFactory $clientFactory,
         \Icyd\Payulatam\Model\Order $orderHelper,
         \Icyd\Payulatam\Model\Session $session,
-        \Icyd\Payulatam\Logger\Logger $logger,
-        \Magento\Framework\App\RequestInterface $request
+        \Icyd\Payulatam\Logger\Logger $logger
     ) {
         parent::__construct($context);
         $this->clientFactory = $clientFactory;
@@ -60,13 +60,13 @@ class Start extends \Magento\Framework\App\Action\Action
          * @var $resultRedirect \Magento\Framework\Controller\Result\Redirect
          */
         $resultRedirect = $this->resultRedirectFactory->create();
+        $redirectUrl = 'checkout/cart';
+        $redirectParams = [];
         if(is_null($this->request->getParam('repeat'))) {
-            $redirectUrl = 'checkout/cart';
             $orderId = $this->orderHelper->getOrderIdForPaymentStart();
         } else {
             $orderId = $this->session->getLastOrderId();
         }
-        $redirectParams = [];
         if ($orderId) {
             $order = $this->orderHelper->loadOrderById($orderId);
             if ($this->orderHelper->canStartFirstPayment($order)) {
@@ -82,13 +82,10 @@ class Start extends \Magento\Framework\App\Action\Action
                         $clientOrderHelper->getNewStatus()
                     );
                     $this->orderHelper->setNewOrderStatus($order);
-
                     $configHelper = $client->getConfigHelper();
                     $this->session->setGatewayUrl($configHelper->getConfig('url'));
-
                     $redirectUrl = $result['redirectUri'];
-                    // throw new \Exception ('Test exception');
-                } catch (LocalizedException | \Exception $e) {
+                } catch (LocalizedException $e) {
                     $this->logger->critical($e);
                     $redirectUrl = 'payulatam/payment/error';
                     $redirectParams = ['exception' => '1'];

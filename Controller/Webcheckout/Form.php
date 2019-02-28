@@ -18,14 +18,18 @@ class Form extends \Magento\Framework\App\Action\Action
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Icyd\Payulatam\Model\Session $session
      */
+    protected $logger;
+
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         \Icyd\Payulatam\Model\Session $session,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        \Icyd\Payulatam\Logger\Logger $logger
     ) {
         parent::__construct($context);
         $this->session = $session;
         $this->resultPageFactory = $resultPageFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -41,12 +45,9 @@ class Form extends \Magento\Framework\App\Action\Action
         $gatewayUrl = $this->session->getGatewayUrl();
 
         if ($orderCreateData) {
-            //Todo: Reactivate after testing
-            //$this->session->setOrderCreateData(null);
+            $this->session->setOrderCreateData(null);
             $resultPage = $this->resultPageFactory->create(true, ['template' => 'Icyd_Payulatam::emptyroot.phtml']);
             $resultPage->addHandle($resultPage->getDefaultLayoutHandle());
-
-
             $resultPage->getLayout()->getBlock('payulatam.webcheckout.form')->setOrderCreateData($orderCreateData);
             $resultPage->getLayout()->getBlock('payulatam.webcheckout.form')->setGatewayUrl($gatewayUrl);
             return $resultPage;
