@@ -33,6 +33,7 @@ class ExtOrderId
     public function generate(\Magento\Sales\Model\Order $order)
     {
         $try = $this->transactionResource->getLastTryByOrderId($order->getId()) + 1;
-        return $order->getIncrementId() . ':' . $this->dateTime->timestamp() . ':' . $try;
+        // return $order->getIncrementId() . ':' . $this->dateTime->timestamp() . ':' . $try;
+        return $order->getIncrementId() . $this->dateTime->timestamp() . $try;
     }
 }
