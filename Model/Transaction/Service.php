@@ -44,14 +44,14 @@ class Service
         if (!$id) {
             throw new LocalizedException(new Phrase('Transaction ' . $payulatamOrderId . ' not found.'));
         }
-        $transaction = $this->transactionRepository->get($id);
-        if ($close) {
-            $transaction->setIsClosed(1);
-        }
-        $rawDetailsInfo = $transaction->getAdditionalInformation(
-            \Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS
-        );
-        $rawDetailsInfo['status'] = $status;
+    $transaction = $this->transactionRepository->get($id);
+    if ($close) {
+        $transaction->setIsClosed(1);
+    }
+    $rawDetailsInfo = $transaction->getAdditionalInformation(
+        \Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS
+    );
+    $rawDetailsInfo['status'] = $status;
         $transaction
             ->setAdditionalInformation(\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS, $rawDetailsInfo)
             ->save();

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright Copyright (c) 2017 Icyd Colombia (https://www.imaginacolombia.com)
+ */
 
 namespace Icyd\Payulatam\Model\Order;
 
@@ -83,6 +86,8 @@ class Processor
     {
         $order = $this->loadOrderByPayuplOrderId($payulatamOrderId);
         $this->orderHelper->completePayment($order, $amount, $payulatamOrderId);
+        // $this->orderHelper->createShipment($order);
+        $this->orderHelper->changeOrderStateToCustom($order, \Magento\Sales\Model\Order::STATE_COMPLETE, 'Payment from PayU received');
         $this->transactionService->updateStatus($payulatamOrderId, $status, true);
     }
 

@@ -4,6 +4,7 @@ namespace Icyd\Payulatam\Model\Client\Webcheckout\Order;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
+use \Icyd\Payulatam\Model\Client\Webcheckout\Order;
 
 class Processor
 {

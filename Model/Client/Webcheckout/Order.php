@@ -2,18 +2,11 @@
 
 namespace Icyd\Payulatam\Model\Client\Webcheckout;
 
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
+
 class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
 {
-    // TODO
-    // const STATUS_PRE_NEW            = 0;
-    // const STATUS_NEW                = 1;
-    // const STATUS_CANCELLED          = 2;
-    // const STATUS_REJECTED           = 3;
-    // const STATUS_PENDING            = 4;
-    // const STATUS_WAITING            = 5;
-    // const STATUS_REJECTED_CANCELLED = 7;
-    // const STATUS_COMPLETED          = 99;
-    // const STATUS_ERROR              = 888;
     const STATUS_PRE_NEW            = 0;
     const STATUS_NEW                = 1;
     const STATUS_APPROVED           = 4;
@@ -25,16 +18,6 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
      * @var string[]
      */
     protected $statusDescription = [
-        // TODO
-        // self::STATUS_PRE_NEW => 'New',
-        // self::STATUS_NEW => 'New',
-        // self::STATUS_CANCELLED => 'Cancelled',
-        // self::STATUS_REJECTED => 'Rejected',
-        // self::STATUS_PENDING => 'Pending',
-        // self::STATUS_WAITING => 'Waiting for acceptance',
-        // self::STATUS_REJECTED_CANCELLED => 'Rejected',
-        // self::STATUS_COMPLETED => 'Completed',
-        // self::STATUS_ERROR => 'Error'
         self::STATUS_PRE_NEW => 'New',
         self::STATUS_NEW => 'New',
         self::STATUS_APPROVED => 'Approved',
@@ -95,11 +78,6 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     protected $orderProcessor;
 
     /**
-     * @var \Magento\Framework\Controller\Result\RawFactory
-     */
-    protected $rawResultFactory;
-
-    /**
      * @param \Magento\Framework\View\Context $context
      * @param Order\DataValidator $dataValidator
      * @param Order\DataGetter $dataGetter
@@ -115,7 +93,6 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     public function __construct(
         \Magento\Framework\View\Context $context,
         \Magento\Framework\App\RequestInterface $request,
-        \Magento\Framework\Controller\Result\RawFactory $rawResultFactory,
         \Icyd\Payulatam\Model\Session $session,
         \Icyd\Payulatam\Logger\Logger $logger,
         \Icyd\Payulatam\Model\ResourceModel\Transaction $transactionResource,
@@ -135,7 +112,6 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
         $this->methodCaller = $methodCaller;
         $this->transactionResource = $transactionResource;
         $this->orderProcessor = $orderProcessor;
-        $this->rawResultFactory = $rawResultFactory;
     }
 
     /**
@@ -151,14 +127,6 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     /**
      * @inheritDoc
      */
-    public function validateRetrieve($payulatamOrderId)
-    {
-        return $this->dataValidator->validateEmpty($payulatamOrderId);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function validateCancel($payulatamOrderId)
     {
         return $this->dataValidator->validateEmpty($payulatamOrderId);
@@ -167,10 +135,10 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     /**
      * @inheritDoc
      */
-    public function validateStatusUpdate(array $data = [])
-    {
-        // TODO: Implement validateStatusUpdate() method.
-    }
+    // public function validateStatusUpdate(array $data = [])
+    // {
+    //     // TODO: Implement validateStatusUpdate() method.
+    // }
 
     /**
      * @inheritDoc
@@ -188,62 +156,62 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     /**
      * @inheritDoc
      */
-    public function retrieve($payulatamOrderId)
-    {
-        $posId = $this->dataGetter->getPosId();
-        $ts = $this->dataGetter->getTs();
-        $sig = $this->dataGetter->getSigForOrderRetrieve([
-            'pos_id' => $posId,
-            'referenceCode' => $payulatamOrderId,
-            'ts' => $ts
-        ]);
-        $result = $this->methodCaller->call('orderRetrieve', [
-            $posId,
-            $payulatamOrderId,
-            $ts,
-            $sig
-        ]);
-        if ($result) {
-            return [
-                'status' => $result->transStatus,
-                'amount' => $result->transAmount / 100
-            ];
-        }
-        return false;
-    }
+    // public function retrieve($payulatamOrderId)
+    // {
+    //     $posId = $this->dataGetter->getPosId();
+    //     $ts = $this->dataGetter->getTs();
+    //     $sig = $this->dataGetter->getSigForOrderRetrieve([
+    //         'pos_id' => $posId,
+    //         'referenceCode' => $payulatamOrderId,
+    //         'ts' => $ts
+    //     ]);
+    //     $result = $this->methodCaller->call('orderRetrieve', [
+    //         $posId,
+    //         $payulatamOrderId,
+    //         $ts,
+    //         $sig
+    //     ]);
+    //     if ($result) {
+    //         return [
+    //             'status' => $result->transStatus,
+    //             'amount' => $result->transAmount / 100
+    //         ];
+    //     }
+    //     return false;
+    // }
+    //
+    // /**
+    //  * @inheritDoc
+    //  */
+    // public function cancel($payulatamOrderId)
+    // {
+    //     // TODO: Implement cancel() method.
+    // }
+    //
+    // /**
+    //  * @inheritDoc
+    //  */
+    // public function statusUpdate(array $data = [])
+    // {
+    //     // TODO: Implement statusUpdate() method.
+    // }
 
     /**
      * @inheritDoc
      */
-    public function cancel($payulatamOrderId)
-    {
-        // TODO: Implement cancel() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function statusUpdate(array $data = [])
-    {
-        // TODO: Implement statusUpdate() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function consumeNotification(\Magento\Framework\App\Request\Http $request)
-    {
-        $payulatamOrderId = $this->notificationHelper->getPayuplOrderId($request);
-        $orderData = $this->retrieve($payulatamOrderId);
-        if ($orderData) {
-            return [
-                'payulatamOrderId' => md5($payulatamOrderId),
-                'status' => $orderData['status'],
-                'amount' => $orderData['amount']
-            ];
-        }
-        return false;
-    }
+    // public function consumeNotification(\Magento\Framework\App\Request\Http $request)
+    // {
+    //     $payulatamOrderId = $this->notificationHelper->getPayuplOrderId($request);
+    //     $orderData = $this->retrieve($payulatamOrderId);
+    //     if ($orderData) {
+    //         return [
+    //             'payulatamOrderId' => md5($payulatamOrderId),
+    //             'status' => $orderData['status'],
+    //             'amount' => $orderData['amount']
+    //         ];
+    //     }
+    //     return false;
+    // }
 
     /**
      * @inheritDoc
@@ -258,17 +226,13 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
      */
     public function addSpecialDataToOrder(array $data = [])
     {
-        if ($this->dataGetter->getTestMode() == 0) {
-            $data['merchantId'] = $this->dataGetter->getMerchantId();
-            $data['accountId'] = $this->dataGetter->getAccountId();
-            $data['signature'] = $this->dataGetter->getSigForOrderCreate($data);
-        } else {
-            $data['merchantId'] = '508029';
-            $data['accountId'] = $this->dataGetter->getCountry();
-            $data['ApiKey'] = 'pRRXKOl8ikMmt9u';
-            $data['ApiLogin'] = '4Vj8eK4rloUd272L48hsrarnUA';
-            $data['test'] = '1';
+        if ($this->dataGetter->getTestMode()) {
+            $data['test'] = $this->dataGetter->getTestMode();
         }
+        $data['merchantId'] = $this->dataGetter->getMerchantId();
+        $data['accountId'] = $this->dataGetter->getAccountId();
+        $data['signature'] = $this->dataGetter->getSigForOrderCreate($data);
+
         return $data;
     }
 
@@ -290,19 +254,15 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
         $extOrderId = $this->request->getParam('lapResponseCode');
 
         if ($errorCode == Self::STATUS_ERROR) {
-            $this->session->setErrorMsg("Error durante tansacción: {$extOrderId}");
+            $this->session->setErrorMsg("Error durante tansacción.");
             $this->logger->error('Payment error ' . $errorCode . ' for transaction ' . $extOrderId . '.');
         } elseif ($errorCode == Self::STATUS_DECLINED) {
-            $this->session->setErrorMsg("Transacción rechazada por: {$extOrderId}");
-            // $this->logger->debug('Pago rechazada');
+            $this->session->setErrorMsg("Transacción rechazada.");
         } elseif ($errorCode == Self::STATUS_PENDING) {
-            $this->session->setErrorMsg("Transacción pendiente por: {$extOrderId}");
-            // $this->logger->debug('Pago pendiente');
+            $this->session->setErrorMsg("Transacción pendiente por pago.");
         } elseif ($errorCode == Self::STATUS_EXPIRED) {
             $this->session->setErrorMsg("Transacción expirada.");
-            // $this->logger->debug('Pago expirado');
         } elseif ($errorCode == Self::STATUS_APPROVED) {
-            // $this->logger->debug('Pago aprovado');
             return true;
         }
         return false;
@@ -314,26 +274,30 @@ class Order implements \Icyd\Payulatam\Model\Client\OrderInterface
     public function canProcessNotification($payulatamOrderId)
     {
         return !in_array(
-            $this->transactionResource->getStatusByPayuplOrderId($payulatamOrderId),
-            [self::STATUS_COMPLETED, self::STATUS_CANCELLED]
+             $this->transactionResource->getStatusByPayuplOrderId($payulatamOrderId),
+             [self::STATUS_APPROVED, self::STATUS_EXPIRED]
         );
     }
 
     /**
      * @inheritDoc
      */
-    public function processNotification($payulatamOrderId, $status, $amount)
+    public function processNotification(array $data = [])
     {
-        /**
-         * @var $result \Magento\Framework\Controller\Result\Raw
-         */
-        $newest = $this->transactionResource->checkIfNewestByPayuplOrderId($payulatamOrderId);
-        $this->orderProcessor->processStatusChange($payulatamOrderId, $status, $amount, $newest);
-        $result = $this->rawResultFactory->create();
-        $result
-            ->setHttpResponseCode(200)
-            ->setContents('OK');
-        return $result;
+        if ($this->dataValidator->validateEmpty($data)) {
+            $payulatamOrderId = md5($data['reference_sale']);
+            if ($this->canProcessNotification($payulatamOrderId)) {
+               if ($this->dataGetter->getSigForOrderRetrieve($data) != $data['sign']) {
+                    throw new LocalizedException(new Phrase('Invalid Signature.'));
+                }
+                    $newest = $this->transactionResource->checkIfNewestByPayuplOrderId($payulatamOrderId);
+                    $this->orderProcessor->processStatusChange($payulatamOrderId, $data['state_pol'], $data['value'], $newest);
+                    return true;
+                } else {
+                    $this->logger->error("{$payulatamOrderId} already closed");
+                }
+            }
+        return false;
     }
 
     /**

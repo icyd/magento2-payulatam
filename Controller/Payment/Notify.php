@@ -20,6 +20,11 @@ class Notify extends \Magento\Framework\App\Action\Action
     protected $resultForwardFactory;
 
     /**
+     * @var \Magento\Framework\Controller\Result\RawFactory
+     */
+    protected $rawResultFactory;
+
+    /**
      * @var \Icyd\Payulatam\Logger\Logger
      */
     protected $logger;
@@ -27,6 +32,7 @@ class Notify extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
+        \Magento\Framework\Controller\Result\RawFactory $rawResultFactory,
         \Icyd\Payulatam\Model\ClientFactory $clientFactory,
         \Icyd\Payulatam\Logger\Logger $logger
     ) {
@@ -34,6 +40,7 @@ class Notify extends \Magento\Framework\App\Action\Action
         $this->context = $context;
         $this->clientFactory = $clientFactory;
         $this->resultForwardFactory = $resultForwardFactory;
+        $this->rawResultFactory = $rawResultFactory;
         $this->logger = $logger;
          // CsrfAwareAction Magento2.3 compatibility
         if (interface_exists("\Magento\Framework\App\CsrfAwareActionInterface")) {
@@ -47,47 +54,21 @@ class Notify extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $request = $this->context->getRequest();
-        $params = $request->getPost();
-        $this->logger->debug("Debug POST Resquest");
-        foreach ($params as $key => $value) {
-            $this->logger->debug("{$key} => {$value}");
+        try {
+            $data = $this->context->getRequest()->getParams();
+            $client = $this->clientFactory->create();
+            $clientOrderHelper = $client->getOrderHelper();
+            if ($clientOrderHelper->ProcessNotification($data)) {
+                $result = $this->rawResultFactory->create();
+                $result->setHttpResponseCode(200)->setContents('OK');
+                return $result;
+            }
+        } catch (LocalizedException $e) {
+            $this->logger->critical($e);
         }
-        $resultForward = $this->resultForwardFactory->create();
-        $resultForward->forward('noroute');
-        return $resultForward;
+
+        $result = $this->resultForwardFactory->create();
+        $result->forward('noroute');
+        return $result;
     }
 }
-//         /**
-//          * @var $client \Icyd\Payulatam\Model\Client
-//          */
-//     //     $request = $this->context->getRequest();
-//         $this->logger->debug("Content of request");
-//     //     foreach ($request as $key => $value) {
-//     //         $this->logger->debug("{$key} => {$value}");
-//     //     }
-//     //     try {
-//     //         $client = $this->clientFactory->create();
-//     //         $response = $client->orderConsumeNotification($request);
-//     //         // $this->logger->debug(print_r($response,true));
-//     //         // throw new \Exception ('Test exception');
-//     //         $this->logger->debug("Content of response");
-//     //         foreach ($response as $key => $value) {
-//     //             $this->logger->debug("{$key} => {$value}");
-//     //         }
-//     //         $clientOrderHelper = $client->getOrderHelper();
-//     //         if ($clientOrderHelper->canProcessNotification($response['referece_sale'])) {
-//     //             return $clientOrderHelper->processNotification(
-//     //                 $response['reference_sale'],
-//     //                 $response['state_pol'],
-//     //                 $response['value']
-//     //             );
-//     //         }
-//     //     } catch (LocalizedException $e) {
-//     //         $this->logger->critical($e);
-//     //     }
-//     //     /**
-//     //      * @var $resultForward \Magento\Framework\Controller\Result\Forward
-//     //      */
-//     }
-// }

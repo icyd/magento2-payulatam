@@ -10,6 +10,10 @@ class Transaction extends AbstractDb
      * @var \Magento\Framework\Stdlib\DateTime
      */
     protected $date;
+    /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    protected $serialize;
 
     /**
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
@@ -19,6 +23,7 @@ class Transaction extends AbstractDb
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,
         \Magento\Framework\Stdlib\DateTime $date,
+        \Magento\Framework\Serialize\Serializer\Json $serialize,
         $resourcePrefix = null
     ) {
         parent::__construct(
@@ -26,6 +31,7 @@ class Transaction extends AbstractDb
             $resourcePrefix
         );
         $this->date = $date;
+        $this->serialize = $serialize;
     }
 
     /**
@@ -169,7 +175,7 @@ class Transaction extends AbstractDb
             $payulatamOrderId
         );
         if ($serializedAdditionalInformation) {
-            $additionalInformation = unserialize($serializedAdditionalInformation);
+            $additionalInformation = $this->serialize->unserialize($serializedAdditionalInformation);
             return $additionalInformation[\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS][$field];
         }
         return false;
@@ -194,7 +200,7 @@ class Transaction extends AbstractDb
             ->limit(1);
         $row = $adapter->fetchRow($select);
         if ($row) {
-            $additionalInformation = unserialize($row['additional_information']);
+            $additionalInformation = $this->serialize->unserialize($row['additional_information']);
             return $additionalInformation[\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS][$field];
         }
         return $valueIfNotFound;

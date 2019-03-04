@@ -85,6 +85,10 @@ class DataGetter
      */
     public function getMerchantId()
     {
+        if ($this->getTestMode()) {
+            return '508029';
+        }
+
         return $this->configHelper->getConfig('merchantId');
     }
 
@@ -93,7 +97,35 @@ class DataGetter
      */
     public function getAccountId()
     {
+        if ($this->getTestMode()) {
+            return $this->getCountry();
+        }
+
         return $this->configHelper->getConfig('accountId');
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiKey()
+    {
+        if ($this->getTestMode()) {
+            return '4Vj8eK4rloUd272L48hsrarnUA';
+        }
+
+        return $this->configHelper->getConfig('ApiKey');
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiLogin()
+    {
+        if ($this->getTestMode()) {
+            return 'pRRXKOl8ikMmt9u';
+        }
+
+        return $this->configHelper->getConfig('ApiLogin');
     }
 
     /**
@@ -138,7 +170,7 @@ class DataGetter
         //“ApiKey~merchantId~referenceCode~amount~currency”.
 
         return md5(
-            $this->configHelper->getConfig('ApiKey')."~".
+            $this->getApiKey()."~".
             $data['merchantId'] ."~".
             $data['referenceCode'] ."~".
             $data['amount']."~".
@@ -153,10 +185,18 @@ class DataGetter
     public function getSigForOrderRetrieve(array $data = [])
     {
         return md5(
-            $data['pos_id'] .
-            $data['referenceCode'] .
-            $data['ts'] .
-            $this->configHelper->getConfig('key_md5')
+            $this->getApiKey()."~".
+            $data['merchant_id']."~".
+            $data['reference_sale']."~".
+            $this->processValue($data['value'])."~".
+            $data['currency']."~".
+            $data['state_pol']
         );
+    }
+
+    public function processValue($value)
+    {
+        $pattern = '/(\d+(.|,)\d)0$/';
+        return preg_replace($pattern, '\1', $value);
     }
 }
