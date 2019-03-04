@@ -3,7 +3,7 @@
   "description": "PayuLatam module for Magento 2",
   "require": {
     "php": ">=7.0.0",
-    "magento/product-community-edition": "2.2.0",
+    "magento/product-community-edition": ">=2.2.0",
     "magento/module-checkout": ">=100",
     "magento/module-payment": ">=100",
     "magento/module-sales": ">=100",
