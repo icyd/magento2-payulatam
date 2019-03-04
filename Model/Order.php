@@ -1,9 +1,8 @@
 <?php
-/**
- * @copyright Copyright (c) 2017 Imagina Colombia (https://www.imaginacolombia.com)
- */
 
-namespace Imagina\Payulatam\Model;
+namespace Icyd\Payulatam\Model;
+
+use Magento\Framework\Exception\LocalizedException;
 
 class Order
 {
@@ -38,6 +37,15 @@ class Order
     protected $orderValidator;
 
     /**
+     * @var \Magento\Sales\Model\Convert\Order
+     */
+    protected $_convertOrder;
+
+    /**
+     * @var \Magento\Shipment\Model\ShipmentNotifier
+     */
+    protected $_shipmentNotifier;
+    /**
      * @param ResourceModel\Transaction $transactionResource
      * @param Sales\OrderFactory $orderFactory
      * @param \Magento\Checkout\Model\Session\SuccessValidator $checkoutSuccessValidator
@@ -51,6 +59,8 @@ class Order
         \Magento\Checkout\Model\Session\SuccessValidator $checkoutSuccessValidator,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\RequestInterface $request,
+        \Magento\Sales\Model\Convert\Order $_convertOrder,
+        \Magento\Shipping\Model\ShipmentNotifier $_shipmentNotifier,
         Order\Validator $orderValidator
     ) {
         $this->transactionResource = $transactionResource;
@@ -58,6 +68,8 @@ class Order
         $this->checkoutSuccessValidator = $checkoutSuccessValidator;
         $this->checkoutSession = $checkoutSession;
         $this->request = $request;
+        $this->_convertOrder = $_convertOrder;
+        $this->_shipmentNotifier = $_shipmentNotifier;
         $this->orderValidator = $orderValidator;
     }
 
@@ -168,6 +180,42 @@ class Order
         $order->save();
     }
 
+    public function createShipment(Sales\Order $order)
+    {
+        if (!$order->canShip()) {
+            throw new LocalizedException(__("Shipment can not be created for order:") . $order->getId());
+        }
+        $shipment = $this->_convertOrder->toShipment($order);
+
+        foreach ($order->getAllItems() as $orderItem) {
+            if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
+                continue;
+            }
+            $qtyShipped = $orderItem->getQtyToShip();
+            $shipmentItem = $this->_convertOrder->itemToShipmentItem($orderItem)->setQty($qtyShipped);
+            $shipment->addItem($shipmentItem);
+        }
+        $shipment->register();
+        $shipment->getOrder()->setIsInProcess(true);
+
+        try {
+            $shipment->save();
+            $shipment->getOrder()->save();
+            $this->_shipmentNotifier->notify($shipment);
+            $shipment->save();
+        } catch (\Exception $e) {
+            throw new LocalizeException(__($e->getMessage()));
+        }
+    }
+
+    public function changeOrderStateToCustom(Sales\Order $order, $status = \Magento\sales\Model\Order::STATE_COMPLETE, $message = '')
+    {
+        $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
+        $order->setState($status);
+        $order->setStatus($status);
+        $order->addStatusToHistory($order->getStatus(), $message);
+        $order->save();
+    }
     /**
      * @return int|false
      */

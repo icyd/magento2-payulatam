@@ -1,9 +1,6 @@
 <?php
-/**
- * @copyright Copyright (c) 2017 Imagina Colombia (https://www.imaginacolombia.com)
- */
 
-namespace Imagina\Payulatam\Model\Client;
+namespace Icyd\Payulatam\Model\Client;
 
 use Magento\Framework\Exception\LocalizedException;
 
@@ -19,19 +16,13 @@ interface OrderInterface
      * @param $id
      * @return bool
      */
-    public function validateRetrieve($id);
-
-    /**
-     * @param $id
-     * @return bool
-     */
     public function validateCancel($id);
 
     /**
      * @param array $data
      * @return bool
      */
-    public function validateStatusUpdate(array $data = []);
+    // public function validateStatusUpdate(array $data = []);
 
     /**
      * Returns false on fail or array with the following keys on success: orderId, redirectUri, extOrderId
@@ -47,7 +38,7 @@ interface OrderInterface
      * @param string $payulatamOrderId
      * @return array|false
      */
-    public function retrieve($payulatamOrderId);
+    // public function retrieve($payulatamOrderId);
 
     /**
      * Return false on fail or true success.
@@ -55,7 +46,7 @@ interface OrderInterface
      * @param string $payulatamOrderId
      * @return bool
      */
-    public function cancel($payulatamOrderId);
+    // public function cancel($payulatamOrderId);
 
     /**
      * Return false on fail or true success.
@@ -63,7 +54,7 @@ interface OrderInterface
      * @param array $data
      * @return bool
      */
-    public function statusUpdate(array $data = []);
+    // public function statusUpdate(array $data = []);
 
     /**
      * Returns false on fail or array with the following keys on success: payulatamOrderId, status, amount
@@ -71,7 +62,7 @@ interface OrderInterface
      * @param \Magento\Framework\App\Request\Http $request
      * @return array|false
      */
-    public function consumeNotification(\Magento\Framework\App\Request\Http $request);
+    // public function consumeNotification(\Magento\Framework\App\Request\Http $request);
 
     /**
      * @param \Magento\Sales\Model\Order $order
@@ -106,13 +97,11 @@ interface OrderInterface
     public function canProcessNotification($payulatamOrderId);
 
     /**
-     * @param string $payulatamOrderId
-     * @param string $status
-     * @param float $amount
-     * @return \Magento\Framework\Controller\Result\Raw
+     * @param \Magento\Framework\App\Request\Http $request
+     * @return bool
      * @throws LocalizedException
      */
-    public function processNotification($payulatamOrderId, $status, $amount);
+    public function processNotification(array $data = []);
 
     /**
      * @param mixed $status

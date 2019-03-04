@@ -7,15 +7,15 @@ namespace Icyd\Payulatam\Logger\Handler;
 
 use Monolog\Logger;
 
-class Exception extends \Magento\Framework\Logger\Handler\Base
+class Debug extends \Magento\Framework\Logger\Handler\Base
 {
     /**
      * @var string
      */
-    protected $fileName = '/var/log/payulatam/exception.log';
+    protected $fileName = '/var/log/payulatam/debug.log';
 
     /**
      * @var int
      */
-    protected $loggerType = Logger::CRITICAL;
+    protected $loggerType = Logger::DEBUG;
 }

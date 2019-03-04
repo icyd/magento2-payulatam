@@ -1,9 +1,9 @@
 <?php
 /**
- * @copyright Copyright (c) 2017 Imagina Colombia (https://www.imaginacolombia.com)
+ * @copyright Copyright (c) 2017 Icyd Colombia (https://www.imaginacolombia.com)
  */
 
-namespace Imagina\Payulatam\Model\Order;
+namespace Icyd\Payulatam\Model\Order;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
@@ -11,22 +11,22 @@ use Magento\Framework\Phrase;
 class Processor
 {
     /**
-     * @var \Imagina\Payulatam\Model\Order
+     * @var \Icyd\Payulatam\Model\Order
      */
     protected $orderHelper;
 
     /**
-     * @var \Imagina\Payulatam\Model\Transaction\Service
+     * @var \Icyd\Payulatam\Model\Transaction\Service
      */
     protected $transactionService;
 
     /**
-     * @param \Imagina\Payulatam\Model\Order $orderHelper
-     * @param \Imagina\Payulatam\Model\Transaction\Service $transactionService
+     * @param \Icyd\Payulatam\Model\Order $orderHelper
+     * @param \Icyd\Payulatam\Model\Transaction\Service $transactionService
      */
     public function __construct(
-        \Imagina\Payulatam\Model\Order $orderHelper,
-        \Imagina\Payulatam\Model\Transaction\Service $transactionService
+        \Icyd\Payulatam\Model\Order $orderHelper,
+        \Icyd\Payulatam\Model\Transaction\Service $transactionService
     ) {
         $this->orderHelper = $orderHelper;
         $this->transactionService = $transactionService;
@@ -86,12 +86,14 @@ class Processor
     {
         $order = $this->loadOrderByPayuplOrderId($payulatamOrderId);
         $this->orderHelper->completePayment($order, $amount, $payulatamOrderId);
+        // $this->orderHelper->createShipment($order);
+        $this->orderHelper->changeOrderStateToCustom($order, \Magento\Sales\Model\Order::STATE_COMPLETE, 'Payment from PayU received');
         $this->transactionService->updateStatus($payulatamOrderId, $status, true);
     }
 
     /**
      * @param string $payulatamOrderId
-     * @return \Imagina\Payulatam\Model\Sales\Order
+     * @return \Icyd\Payulatam\Model\Sales\Order
      * @throws LocalizedException
      */
     protected function loadOrderByPayuplOrderId($payulatamOrderId)
