@@ -25,7 +25,6 @@ class Start extends \Magento\Framework\App\Action\Action
      * @var \Icyd\Payulatam\Logger\Logger
      */
     protected $logger;
-    protected $request;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -36,7 +35,6 @@ class Start extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\App\RequestInterface $request,
         \Icyd\Payulatam\Model\ClientFactory $clientFactory,
         \Icyd\Payulatam\Model\Order $orderHelper,
         \Icyd\Payulatam\Model\Session $session,
@@ -47,7 +45,6 @@ class Start extends \Magento\Framework\App\Action\Action
         $this->orderHelper = $orderHelper;
         $this->session = $session;
         $this->logger = $logger;
-        $this->request =  $request;
     }
 
     /**
@@ -62,11 +59,7 @@ class Start extends \Magento\Framework\App\Action\Action
         $resultRedirect = $this->resultRedirectFactory->create();
         $redirectUrl = 'checkout/cart';
         $redirectParams = [];
-        if(is_null($this->request->getParam('repeat'))) {
-            $orderId = $this->orderHelper->getOrderIdForPaymentStart();
-        } else {
-            $orderId = $this->session->getLastOrderId();
-        }
+        $orderId = $this->session->getLastOrderId();
         if ($orderId) {
             $order = $this->orderHelper->loadOrderById($orderId);
             if ($this->orderHelper->canStartFirstPayment($order)) {
